@@ -1,0 +1,22 @@
+services:
+  localstack:
+    container_name: clickstream_container
+    image: localstack/localstack:latest
+    environment:
+      - AWS_DEFAULT_REGION=us-east-1
+      - EDGE_PORT=4566
+      - SERVICES=s3
+    ports:
+      - '4566:4566'
+    volumes:  
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+  clickstream_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+        - ../script:/clickstream/script
+        - ../data_generator/data:/clickstream/data
+    depends_on:
+        - localstack
