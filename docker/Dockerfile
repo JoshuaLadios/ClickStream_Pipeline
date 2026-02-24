@@ -7,4 +7,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # COPY ../script script
 
-CMD ["python", "script/clickstream.py"]
+# CMD ["python", "script/clickstream.py"]
+CMD ["sleep", "infinity"]
