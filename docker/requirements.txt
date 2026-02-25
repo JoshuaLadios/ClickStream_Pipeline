@@ -1,2 +1,6 @@
 pandas
 boto3
+pyspark==3.5.0
+logging
+pyarrow
+numpy
