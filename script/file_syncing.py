@@ -15,6 +15,7 @@ def sync_files(s3, bucket_name, data_folder_path):
 
         for file in folder:
             file_path = os.path.join(data_folder_path, file)
+
             try:
                 if file not in existing_objects:
                     s3.upload_file(file_path, bucket_name, file)
@@ -23,7 +24,7 @@ def sync_files(s3, bucket_name, data_folder_path):
                     logger.info(f"Skipped {file} already existed in bucket")
             except ClientError as e:
                 logger.error(f"Failed uploading {file}: {e}")
-
+        
     except ClientError as e:
         logger.error(f"Error during file sync: {e}")
 
@@ -36,5 +37,4 @@ if __name__ == "__main__":
 
     s3 = get_s3_client()  # this knows LocalStack endpoint
     ensure_bucket(s3, bucket_name)
-
     sync_files(s3, bucket_name, data_folder_path)
