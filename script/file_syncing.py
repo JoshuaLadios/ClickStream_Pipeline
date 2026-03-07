@@ -27,14 +27,3 @@ def sync_files(s3, bucket_name, data_folder_path):
         
     except ClientError as e:
         logger.error(f"Error during file sync: {e}")
-
-
-from s3_utils import get_s3_client, ensure_bucket
-
-if __name__ == "__main__":
-    bucket_name = "clickstream-datalake"
-    data_folder_path = "./data"
-
-    s3 = get_s3_client()  # this knows LocalStack endpoint
-    ensure_bucket(s3, bucket_name)
-    sync_files(s3, bucket_name, data_folder_path)

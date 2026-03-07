@@ -1,7 +1,6 @@
 import boto3
 from botocore.exceptions import ClientError
 from logger_config import logger
-import os
 
 # Setup your s3(LocalStack) Connection
 def get_s3_client(endpoint_url="http://localstack:4566"):
@@ -26,11 +25,4 @@ def ensure_bucket(s3_client, bucket_name):
 
     except ClientError as e:
         logger.error(f"Error listing bucket: {e}")
-
-from s3_utils import get_s3_client, ensure_bucket
-
-if __name__ == "__main__":
-    bucket_name = "clickstream-datalake"
-
-    s3 = get_s3_client()  # this knows LocalStack endpoint
-    ensure_bucket(s3, bucket_name)
+        return None

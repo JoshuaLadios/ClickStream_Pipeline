@@ -2,7 +2,6 @@ from logger_config import logger
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StringType, FloatType, StructField, StructType, DecimalType
 from pyspark.sql.functions import col, to_date, date_format, to_timestamp, lit, when, current_timestamp
-from s3_utils import get_s3_client
 
 spark = SparkSession.builder.appName("clickstream-pipeline").getOrCreate()
 spark.sparkContext.setLogLevel("ERROR")
@@ -15,8 +14,6 @@ hadoop_conf.set("fs.s3a.secret.key", "test")
 hadoop_conf.set("fs.s3a.path.style.access", "true")
 hadoop_conf.set("fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
 
-s3 = get_s3_client()
-Bucket_name = "clickstream-datalake"
 
 schema = StructType([
     StructField("event_id", StringType(), False),
@@ -30,16 +27,17 @@ schema = StructType([
     StructField("event_timestamp", StringType(), False)
 ])
 
-ALLOWED_EVENT_TYPE = {"purchase", "product_view", "add_to_cart"}
+ALLOWED_EVENT_TYPE = ["purchase", "product_view", "add_to_cart"]
 valid_df_map = ['event_id', 'user_id', 'session_id', 'event_type', 'page_url', 'product_id', 'price', 'quantity', 'revenue', 'event_date', 'event_time', 'ingestion_time']
 invalid_df_map = ['event_id', 'user_id', 'session_id', 'event_type', 'page_url', 'product_id', 'price', 'quantity', 'event_date', 'event_time', 'ingestion_time', 'invalid_reasons']
-initial_read = spark.read.schema(schema).json("s3a://clickstream-datalake/*.json")
 
 def empty_df(spark, schema):
     return spark.createDataFrame([], schema)
 
-def clean_and_validate(initial_read):
+def clean_and_validate(bucket_name):
     try:
+        initial_read = spark.read.schema(schema).json(f"s3a://{bucket_name}/*.json")
+
         df = initial_read.toDF(*[c.lower() for c in initial_read.columns])
         df = df.dropDuplicates(["event_id"])
         df = df.withColumn("quantity", col("quantity").cast("int"))
@@ -73,6 +71,8 @@ def clean_and_validate(initial_read):
             when(~col("event_type").isin(ALLOWED_EVENT_TYPE), lit("invalid_event_type"))
             .when((col("event_type") == "product_view") & (col("quantity") != 0), lit("invalid_quantity"))
             .when(col("event_type").isin(["purchase", "add_to_cart"]) & (col("quantity") <= 0), lit("invalid_quantity"))
+            .when(col("page_url").isNull(), lit("missing_url"))
+            .when(col("event_timestamp").isNull(), lit("missing_timestamp"))
             .otherwise(lit("Others"))
         )
         
@@ -88,7 +88,8 @@ def clean_and_validate(initial_read):
     
 
     # Valid Data
-    valid_df.write.mode("append").partitionBy("event_date").parquet("s3a://clickstream-datalake/silver/valid")
+    valid_df.write.mode("append").partitionBy("event_date").parquet(f"s3a://{bucket_name}/silver/valid")
+    logger.info("Data has been uploaded")
 
     # Invalid Data
     # invalid_df.write \
