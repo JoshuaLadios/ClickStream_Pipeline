@@ -26,41 +26,46 @@ for day in range(1, 29):
         user_base_time = base_time
         for session_num in range(sessions_per_user):
             session_id = str(uuid.uuid4())
-
             session_start = user_base_time + timedelta(minutes=session_num * 60 + random.randint(0, 59))
             session_time = session_start
 
             # 1️⃣ product view
-            product = random.choice(products)
-            data.append({
-                "event_id": str(uuid.uuid4()),
-                "user_id": f"user_{user}",
-                "session_id": session_id,
-                "event_type": "product_view",
-                "page_url": f"/product/{product['product_id']}",
-                "product_id": product["product_id"],
-                "price": product["price"],
-                "event_timestamp": session_time.isoformat()
-            })
-
-            # 2️⃣ maybe add to cart
-            if random.random() > 0.3:
-                session_time += timedelta(seconds=10)
+            for _ in range(random.randint(1,3)):
+                product = random.choice(products)
                 data.append({
                     "event_id": str(uuid.uuid4()),
                     "user_id": f"user_{user}",
                     "session_id": session_id,
-                    "event_type": "add_to_cart",
-                    "page_url": "/cart",
+                    "event_type": "product_view",
+                    "page_url": f"/product/{product['product_id']}",
                     "product_id": product["product_id"],
                     "price": product["price"],
-                    "quantity": random.randint(1, 3),
                     "event_timestamp": session_time.isoformat()
                 })
 
+                session_time += timedelta(seconds=random.randint(10,20))
+
+            # 2️⃣ maybe add to cart
+            if random.random() > 0.3:
+                for _ in range(random.randint(1,2)):
+                    product = random.choice(products)
+                    data.append({
+                        "event_id": str(uuid.uuid4()),
+                        "user_id": f"user_{user}",
+                        "session_id": session_id,
+                        "event_type": "add_to_cart",
+                        "page_url": "/cart",
+                        "product_id": product["product_id"],
+                        "price": product["price"],
+                        "quantity": random.randint(1, 3),
+                        "event_timestamp": session_time.isoformat()
+                    })
+
+                    session_time += timedelta(seconds=random.randint(120,150))
+
                 # 3️⃣ maybe purchase
                 if random.random() > 0.5:
-                    session_time += timedelta(seconds=15)
+                    product = random.choice(products)
                     data.append({
                         "event_id": str(uuid.uuid4()),
                         "user_id": f"user_{user}",
@@ -72,6 +77,8 @@ for day in range(1, 29):
                         "quantity": random.randint(1, 3),
                         "event_timestamp": session_time.isoformat()
                     })
+
+                    session_time += timedelta(seconds=random.randint(120,150))
 
     df = pd.DataFrame(data)
     file_name = f"events_02-{day}-26.json"
