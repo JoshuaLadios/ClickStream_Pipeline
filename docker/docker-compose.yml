@@ -6,6 +6,7 @@ services:
       - AWS_DEFAULT_REGION=us-east-1
       - EDGE_PORT=4566
       - SERVICES=s3
+      - LOCALSTACK_AUTH_TOKEN=${LOCALSTACK_AUTH_TOKEN}
     ports:
       - '4566:4566'
     volumes:  
@@ -15,6 +16,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    environment:
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=us-east-1
     volumes:
         - ../script:/clickstream/script
         - ../data_generator/data:/clickstream/data
