@@ -33,7 +33,7 @@ RUN curl -L -o /usr/local/lib/python3.11/site-packages/pyspark/jars/hadoop-aws-3
 RUN curl -L -o /usr/local/lib/python3.11/site-packages/pyspark/jars/aws-java-sdk-bundle-1.12.262.jar \
     https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.262/aws-java-sdk-bundle-1.12.262.jar
 
-# COPY ../script script
+# COPY script ./script
 
-# CMD ["python", "script/clickstream.py"]
-CMD ["sleep", "infinity"]
+CMD ["uvicorn", "script.api:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# CMD ["sleep", "infinity"]
