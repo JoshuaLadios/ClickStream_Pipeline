@@ -1,6 +1,6 @@
 services:
   localstack:
-    container_name: clickstream_container
+    container_name: localstack_container
     image: localstack/localstack:latest
     environment:
       - AWS_DEFAULT_REGION=us-east-1
@@ -11,11 +11,17 @@ services:
       - '4566:4566'
     volumes:  
       - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - clickstream-network
 
   clickstream_app:
     build:
       context: .
       dockerfile: Dockerfile
+    
+    ports:
+      - "8000:8000"
+      
     environment:
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
@@ -25,3 +31,9 @@ services:
         - ../data_generator/data:/clickstream/data
     depends_on:
         - localstack
+    networks:
+      - clickstream-network
+
+networks:
+  clickstream-network:
+    external: true
