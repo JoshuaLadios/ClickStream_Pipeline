@@ -4,3 +4,5 @@ pyspark==3.5.0
 logging
 pyarrow
 numpy
+fastapi
+uvicorn[standard]
