@@ -1,8 +1,12 @@
 from botocore.exceptions import ClientError
-from logger_config import logger
+from .logger_config import logger
 import os
 
 def sync_files(s3, bucket_name, data_folder_path):
+    uploaded = []
+    skipped = []
+    failed = []
+
     try:
         folder = os.listdir(data_folder_path)
         paginator = s3.get_paginator("list_objects_v2")
@@ -20,10 +24,20 @@ def sync_files(s3, bucket_name, data_folder_path):
                 if file not in existing_objects:
                     s3.upload_file(file_path, bucket_name, file)
                     logger.info(f"{file} uploaded.")
+                    uploaded.append(file)
+                    
                 else:
                     logger.info(f"Skipped {file} already existed in bucket")
+                    skipped.append(file)
             except ClientError as e:
                 logger.error(f"Failed uploading {file}: {e}")
+                failed.append(file)
+
+        return {
+            "uploaded": uploaded,
+            "skipped": skipped,
+            "failed": failed   
+        }
         
     except ClientError as e:
         logger.error(f"Error during file sync: {e}")

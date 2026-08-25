@@ -1,6 +1,6 @@
 import boto3
 from botocore.exceptions import ClientError
-from logger_config import logger
+from .logger_config import logger
 
 # Setup your s3(LocalStack) Connection
 def get_s3_client(endpoint_url="http://localstack:4566"):

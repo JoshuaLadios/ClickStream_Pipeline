@@ -1,6 +1,6 @@
 from pyspark.sql import SparkSession
-from logger_config import logger
-from s3_utils import get_s3_client
+from .logger_config import logger
+from .s3_utils import get_s3_client
 from pyspark.sql.functions import max as spark_max, min as spark_min
 from pyspark.sql import functions as F
 
